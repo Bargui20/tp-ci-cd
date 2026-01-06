@@ -16,13 +16,13 @@ jobs:
         with:
           python-version: 3.x
 
-      - name: Installer les dépendances
+      - name: Installer les dépendances 
         run: pip install -r requirements.txt
 
       - name: Exécuter les tests
         run: python -m unittest test_app.py
 
-      - name: Run SonarCloud Scan
+      - name: Run SonarCloud Scan Sonar
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
