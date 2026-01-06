@@ -1,79 +1,50 @@
-name: CI/CD Sécurité et Qualité
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:  # Permet l'exécution manuelle
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install dependencies
-      run: |
-        # Adaptez selon votre projet
-        npm ci || pip install -r requirements.txt || mvn dependency:resolve
-    
-    - name: Run tests
-      run: |
-        npm test || python -m pytest || mvn test
-    
-  security:
-    runs-on: ubuntu-latest
+      - name: Récupérer le code
+        uses: actions/checkout@v3
+
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Installer les dépendances 
+        run: pip install -r requirements.txt
+
+      - name: Exécuter les tests
+        run: python -m unittest test_app.py
+
+      - name: Analyse des dépendances avec Snyk
+        uses: snyk/actions/python@main
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Run SonarCloud Scan Sonar
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.organization=bargui20
+            -Dsonar.projectKey=Bargui20_tp-ci-cd
+            -Dsonar.sources=.
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_SCANNER_OPTS: "-Dsonar.analysis.mode=preview"
+
+   
+
+  deploy:
     needs: test
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install dependencies
-      run: npm ci  # ou l'équivalent pour votre projet
-    
-    - name: Snyk Security Scan
-      uses: snyk/actions/node@master
-      continue-on-error: true  # Ne pas bloquer le pipeline
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: |
-          test
-          --severity-threshold=high
-          --json-file-output=snyk-report.json
-    
-    - name: Upload Snyk report
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: snyk-security-report
-        path: snyk-report.json
-    
-  quality:
     runs-on: ubuntu-latest
-    needs: security
-    
+
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.organization=bargui20
-          -Dsonar.projectKey=Bargui20_tp-ci-cd
-          -Dsonar.sources=.
-          -Dsonar.javascript.node.maxspace=4096
-          -Dsonar.exclusions=**/node_modules/**,**/*.spec.js
-    
-    - name: Check Quality Gate
-      run: |
-        # Vérifier le statut de la Quality Gate
-        echo "Quality Gate vérifiée"
+      - name: Déclencher le déploiement sur Render
+        run: |
+          curl -X POST "https://api.render.com/deploy/srv-d5dogrjuibrs7394p4p0?key=72gB4yCMm90" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
