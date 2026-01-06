@@ -1,9 +1,12 @@
 name: CI/CD Pipeline
-on: [push]
+
+on:
+  push:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v3
@@ -19,9 +22,23 @@ jobs:
       - name: Exécuter les tests
         run: python -m unittest test_app.py
 
+      - name: Analyse du code avec SonarCloud
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          TOKEN_SONAR: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=bargui20
+            -Dsonar.projectKey=Bargui20_tp-ci-cd
+            -Dsonar.sources=.
+      - name: Analyse des dépendances avec Snyk
+        uses: snyk/actions/python@main
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
   deploy:
     needs: test
     runs-on: ubuntu-latest
+
     steps:
       - name: Déclencher le déploiement sur Render
         run: |
