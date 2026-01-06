@@ -23,7 +23,7 @@ jobs:
         run: python -m unittest test_app.py
 
       - name: Run SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@d7f9a3b4f6c1e8a2e1a9f8c2e0b1c7a3d4f5e6a7
+        uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
             -Dsonar.organization=bargui20
