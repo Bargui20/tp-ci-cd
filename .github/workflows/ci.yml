@@ -32,6 +32,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+   
+
       - name: Analyse des dépendances avec Snyk
         uses: snyk/actions/python@main
         env:
