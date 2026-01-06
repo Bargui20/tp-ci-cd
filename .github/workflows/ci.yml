@@ -22,15 +22,15 @@ jobs:
       - name: Exécuter les tests
         run: python -m unittest test_app.py
 
-      - name: Analyse du code avec SonarCloud Re Test token
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Run SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@d7f9a3b4f6c1e8a2e1a9f8c2e0b1c7a3d4f5e6a7
         with:
           args: >
             -Dsonar.organization=bargui20
             -Dsonar.projectKey=Bargui20_tp-ci-cd
             -Dsonar.sources=.
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Analyse des dépendances avec Snyk
         uses: snyk/actions/python@main
